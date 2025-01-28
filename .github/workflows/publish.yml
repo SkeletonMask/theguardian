@@ -1,0 +1,41 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on tags like v1.0.0, v2.1.0, etc.
+
+jobs:
+  publish:
+    runs-on: ${{ matrix.os }}  # Use matrix to define multiple OSes
+    
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]  # Define both Windows and Linux in the matrix
+
+    steps:
+    # Step 1: Checkout the code
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    # Step 2: Set up Python environment
+    - name: Set up Python 3.9+
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    # Step 3: Install dependencies
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine requests==2.32.3
+    
+    # Step 4: Build the package
+    - name: Build package
+      run: python setup.py sdist bdist_wheel
+
+    # Step 5: Publish the package to PyPI
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@v1
+      with:
+        password: ${{ secrets.PYPI_TOKEN }}
